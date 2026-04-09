@@ -81,8 +81,12 @@ def run_set(args) -> int:
     env_vars[args.key] = args.value
     
     # Write back to file
-    content = serialize_env(env_vars)
-    env_file.write_text(content)
+    try:
+        content = serialize_env(env_vars)
+        env_file.write_text(content)
+    except OSError as e:
+        print(f"Error: Could not write to '{env_file}': {e}", file=sys.stderr)
+        return 1
     
     # Display confirmation
     action = "Updated" if is_update else "Added"
