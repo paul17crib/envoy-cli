@@ -82,6 +82,17 @@ def test_get_quiet_mode(tmp_env_file):
     assert out.getvalue().strip() == "myapp"
 
 
+def test_get_quiet_mode_multiple_keys(tmp_env_file):
+    """Quiet mode with multiple keys should print one value per line."""
+    out = io.StringIO()
+    args = make_args(["APP_NAME", "DEBUG"], tmp_env_file, quiet=True)
+    result = run_get(args, out=out)
+    assert result == 0
+    lines = out.getvalue().strip().splitlines()
+    assert "myapp" in lines
+    assert "true" in lines
+
+
 def test_get_missing_key_returns_error(tmp_env_file):
     out = io.StringIO()
     args = make_args(["NONEXISTENT"], tmp_env_file)
