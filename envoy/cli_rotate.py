@@ -41,6 +41,17 @@ def build_parser(subparsers=None):
     return parser
 
 
+def _resolve_target_keys(env, requested_keys, err=sys.stderr):
+    """Resolve which keys to rotate, warning about any requested keys not found in env."""
+    if requested_keys:
+        missing = [k for k in requested_keys if k not in env]
+        if missing:
+            for key in missing:
+                err.write(f"Warning: key '{key}' not found in {{}}, skipping.\n".format(".env"))
+        return [k for k in requested_keys if k in env]
+    return [k for k in env if is_sensitive_key(k)]
+
+
 def run_rotate(args, out=sys.stdout, err=sys.stderr):
     try:
         env = load_local(args.file)
@@ -48,9 +59,7 @@ def run_rotate(args, out=sys.stdout, err=sys.stderr):
         err.write(f"Error: {e}\n")
         return 1
 
-    target_keys = args.keys if args.keys else [
-        k for k in env if is_sensitive_key(k)
-    ]
+    target_keys = _resolve_target_keys(env, args.keys, err=err)
 
     if not target_keys:
         out.write("No sensitive keys found to rotate.\n")
