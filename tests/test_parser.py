@@ -54,6 +54,16 @@ def test_inline_comment_stripped():
     assert result["INLINE"] == "value"
 
 
+def test_empty_value():
+    result = parse_env_string("EMPTY=")
+    assert result["EMPTY"] == ""
+
+
+def test_empty_quoted_value():
+    result = parse_env_string('EMPTY=""')
+    assert result["EMPTY"] == ""
+
+
 def test_full_sample():
     result = parse_env_string(SAMPLE_ENV)
     assert result["DB_HOST"] == "localhost"
