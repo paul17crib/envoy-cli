@@ -39,6 +39,25 @@ def _colorize(symbol: str, text: str, no_color: bool) -> str:
     return f"{_COLORS[symbol]}{text}{_RESET}"
 
 
+def _format_entry(entry) -> str:
+    """Format a single diff entry into a human-readable line.
+
+    Args:
+        entry: A DiffEntry with symbol, key, old_value, and new_value fields.
+
+    Returns:
+        A formatted string representing the diff line.
+    """
+    if entry.symbol == "+":
+        return f"{entry.symbol} {entry.key}={entry.new_value}"
+    elif entry.symbol == "-":
+        return f"{entry.symbol} {entry.key}={entry.old_value}"
+    elif entry.symbol == "~":
+        return f"{entry.symbol} {entry.key}: {entry.old_value!r} -> {entry.new_value!r}"
+    else:
+        return f"{entry.symbol} {entry.key}={entry.old_value}"
+
+
 def run_diff2(args: argparse.Namespace) -> int:
     try:
         base_env = load_local(args.base)
@@ -63,15 +82,7 @@ def run_diff2(args: argparse.Namespace) -> int:
         return 0
 
     for entry in entries:
-        if entry.symbol == "+":
-            line = f"{entry.symbol} {entry.key}={entry.new_value}"
-        elif entry.symbol == "-":
-            line = f"{entry.symbol} {entry.key}={entry.old_value}"
-        elif entry.symbol == "~":
-            line = f"{entry.symbol} {entry.key}: {entry.old_value!r} -> {entry.new_value!r}"
-        else:
-            line = f"{entry.symbol} {entry.key}={entry.old_value}"
-
+        line = _format_entry(entry)
         print(_colorize(entry.symbol, line, args.no_color))
 
     added, removed, changed = diff_summary(entries)
