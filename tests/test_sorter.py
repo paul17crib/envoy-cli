@@ -98,3 +98,12 @@ def test_sort_empty_env():
     assert sort_by_value({}) == {}
     assert sort_by_length({}) == {}
     assert group_sort({}) == {}
+
+
+def test_sort_by_value_preserves_keys():
+    """Ensure sort_by_value does not drop or rename any keys."""
+    env = {"B": "banana", "A": "apple", "C": "cherry"}
+    result = sort_by_value(env)
+    assert set(result.keys()) == set(env.keys())
+    for k, v in env.items():
+        assert result[k] == v
