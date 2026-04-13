@@ -22,6 +22,22 @@ class CheckResult:
                 lines.append(f"  [EXTRA]   {key}")
         return "\n".join(lines)
 
+    def counts(self, strict: bool = False) -> str:
+        """Return a short human-readable summary of issue counts.
+
+        Example output::
+
+            "1 missing, 2 extra"   # strict=True
+            "1 missing"            # strict=False
+            "ok"                   # no issues
+        """
+        parts = []
+        if self.missing:
+            parts.append(f"{len(self.missing)} missing")
+        if strict and self.extra:
+            parts.append(f"{len(self.extra)} extra")
+        return ", ".join(parts) if parts else "ok"
+
 
 def check_env(
     reference: Dict[str, str],
