@@ -21,6 +21,13 @@ class RemoteProvider(ABC):
         """Push env vars to the remote source."""
         ...
 
+    def list(self) -> list:
+        """List available env names from the remote source.
+
+        Subclasses may override this to provide a meaningful implementation.
+        """
+        raise NotImplementedError(f"{type(self).__name__} does not support listing envs.")
+
 
 class FileRemoteProvider(RemoteProvider):
     """A simple file-based remote provider (useful for testing / shared dirs)."""
@@ -43,6 +50,16 @@ class FileRemoteProvider(RemoteProvider):
         path = self._path_for(env_name)
         with open(path, "w") as f:
             f.write(serialize_env(env))
+
+    def list(self) -> list:
+        """List all env names available in the base directory."""
+        if not os.path.exists(self.base_dir):
+            return []
+        return [
+            os.path.splitext(fname)[0]
+            for fname in os.listdir(self.base_dir)
+            if fname.endswith(".env")
+        ]
 
 
 class JSONRemoteProvider(RemoteProvider):
@@ -72,3 +89,7 @@ class JSONRemoteProvider(RemoteProvider):
         store = self._load_store()
         store[env_name] = env
         self._save_store(store)
+
+    def list(self) -> list:
+        """List all env names stored in the JSON file."""
+        return list(self._load_store().keys())
