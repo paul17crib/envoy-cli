@@ -92,6 +92,26 @@ def test_init_missing_template_returns_error(tmp_path):
     assert "not found" in buf.getvalue()
 
 
+def test_init_template_with_overwrite_replaces_existing(tmp_path):
+    """Template init with --overwrite should replace an existing output file."""
+    template = tmp_path / "template.env"
+    template.write_text("API_KEY=secret\nDEBUG=true\n")
+    output = tmp_path / ".env"
+    output.write_text("EXISTING=1\n")
+    parser = build_parser()
+    args = parser.parse_args(
+        ["--output", str(output), "--template", str(template), "--overwrite"]
+    )
+    buf = io.StringIO()
+    rc = run_init(args, out=buf)
+    assert rc == 0
+    env = parse_env_file(str(output))
+    assert "EXISTING" not in env
+    assert set(env.keys()) == {"API_KEY", "DEBUG"}
+    assert env["API_KEY"] == ""
+    assert env["DEBUG"] == ""
+
+
 def test_build_parser_standalone():
     parser = build_parser()
     args = parser.parse_args([])
